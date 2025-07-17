@@ -20,15 +20,16 @@ def article_serializer(data) -> dict:
     }
 
 @router.get("/articles")
-def get_articles():
+async def get_articles():
     articles = articles_collection.find()
     return [article_serializer(article) for article in articles]
 
 
-from fastapi.encoders import jsonable_encoder
+
 
 @router.post("/article")
-def create_article(article_data: article):
+
+async def create_article(article_data: article):
     article_dict = jsonable_encoder(article_data)
     # Supprime 'id' ou '_id' si présents pour éviter doublons
     article_dict.pop("id", None)
