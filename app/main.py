@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.database import articles_collection
+from app.routes.article_routes import router as article_router
 
 app = FastAPI()
 
@@ -9,3 +10,4 @@ def test_connection():
     return {"status": "Connected to MongoDB Atlas", "articles": count}
 
 
+app.include_router(article_router)

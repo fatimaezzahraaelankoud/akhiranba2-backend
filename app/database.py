@@ -14,7 +14,7 @@ except Exception as e:
     print(e)
 
 # Database name
-db = client["akhir_alanbaa"]
+db = client["akhir_alanbaa_db"]
 
 # Articles collection
 articles_collection = db["articles"]

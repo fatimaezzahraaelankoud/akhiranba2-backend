@@ -1,29 +1,43 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime
+from fastapi import APIRouter,HTTPException
+from fastapi.encoders import jsonable_encoder
+from app.database import articles_collection
+from app.model.article_model import article
+from bson import ObjectId
 
 router = APIRouter()
 
-# Modèle Article simplifié
-class Article(BaseModel):
-    titre: str
-    contenu: str
-    auteur_id: str
-    categorie_id: str
-    image: Optional[str] = None
-    tags: Optional[List[str]] = []
-
-# En attendant la base de données, stockons temporairement les articles dans une liste
-fake_articles_db = []
-
-@router.post("/articles")
-def ajouter_article(article: Article):
-    article_dict = article.dict()
-    article_dict["date_publication"] = datetime.utcnow()
-    fake_articles_db.append(article_dict)
-    return {"message": "Article ajouté", "article": article_dict}
+def article_serializer(data) -> dict:
+    return {
+        "id": str(data["_id"]),  
+        "titre": data["titre"],
+        "contenu": data["contenu"],
+        "slug": data.get("slug"),
+        "resume": data.get("resume"),
+        "image_url": data["image_url"],
+        "categorie": data["categorie"],
+        "date_publication": data["date_publication"],
+        "auteur": data["auteur"],
+    }
 
 @router.get("/articles")
 def get_articles():
-    return fake_articles_db
+    articles = articles_collection.find()
+    return [article_serializer(article) for article in articles]
+
+
+from fastapi.encoders import jsonable_encoder
+
+@router.post("/article")
+def create_article(article_data: article):
+    article_dict = jsonable_encoder(article_data)
+    # Supprime 'id' ou '_id' si présents pour éviter doublons
+    article_dict.pop("id", None)
+    article_dict.pop("_id", None)
+
+    result = articles_collection.insert_one(article_dict)
+
+    # Ajoute l'id MongoDB converti en str
+    article_dict["id"] = str(result.inserted_id)
+
+    return article_dict
+
