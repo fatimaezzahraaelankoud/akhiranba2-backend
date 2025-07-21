@@ -27,7 +27,7 @@ async def get_articles():
     return [article_serializer(article) for article in articles]
 
 
-#Route pour GET articles BY id
+#Route pour GET article BY id
 @router.get("/articles/{id}")
 async def get_article_by_id(id: str):
     try:

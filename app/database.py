@@ -18,3 +18,7 @@ db = client["akhir_alanbaa_db"]
 
 # Articles collection
 articles_collection = db["articles"]
+
+#comments collection
+comments_collection = db["commentaires"]
+
