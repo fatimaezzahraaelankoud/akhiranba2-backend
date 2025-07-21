@@ -2,7 +2,7 @@ from fastapi import APIRouter,HTTPException
 from app.model.comment_model import Comment
 from app.database import comments_collection
 from bson import ObjectId
-
+from fastapi.encoders import jsonable_encoder
 route = APIRouter()
 
 def comment_serializer(data) -> dict :
@@ -24,5 +24,12 @@ async def get_comments(article_id : str):
      ]
 
 
-@route.post("/comment"):
+# Route pour POST commentaire
+@route.post("/comments")
+async def create_comment(comment: Comment):
+    comment_dict = jsonable_encoder(comment)
+    comment_dict.pop("id", None)
+    result = comments_collection.insert_one(comment_dict)
+    comment_dict["id"] = str(result.inserted_id)
+    return comment_dict
 
