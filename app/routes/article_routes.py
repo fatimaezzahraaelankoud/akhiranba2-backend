@@ -64,3 +64,23 @@ async def create_article(article_data: article):
 
     return article_dict
 
+# pour modifier un article deje existant
+@router.put("/articles/{id}")
+async def update_article(id: str, updated_data: dict):
+    article = articles_collection.find_one({"_id": ObjectId(id)})
+    if article:
+        articles_collection.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": updated_data}
+        )
+        return {"message": "Article mis à jour"}
+    raise HTTPException(status_code=404, detail=" Article non trouvé")
+
+
+# pour supprimer un article
+@router.delete("/articles/{id}")
+async def delete_article(id: str):
+    result = articles_collection.delete_one({"_id": ObjectId(id)})
+    if result.deleted_count == 1:
+        return {"message": " Article supprimé"}
+    raise HTTPException(status_code=404, detail=" Article non trouvé")

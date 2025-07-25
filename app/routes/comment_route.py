@@ -33,3 +33,11 @@ async def create_comment(comment: Comment):
     comment_dict["id"] = str(result.inserted_id)
     return comment_dict
 
+
+# route pour supprimer un commentaire
+@route.delete("/comments/{id}")
+async def delete_comment(id: str):
+    result = comments_collection.delete_one({"_id": ObjectId(id)})
+    if result.deleted_count == 1:
+        return {"message": " Commentaire supprimé"}
+    raise HTTPException(status_code=404, detail=" Commentaire non trouvé")
