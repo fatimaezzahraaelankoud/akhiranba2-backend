@@ -1,43 +1,31 @@
-from fastapi import APIRouter,HTTPException
-from app.model.comment_model import Comment
-from app.database import comments_collection
-from bson import ObjectId
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, HTTPException, status
+from typing import List
+from app.schemas.comment_schema import CommentCreate, CommentRead
+from app.crud.comment_crud import get_comments_by_article, create_comment, delete_comment ,update_comment
+
 route = APIRouter()
-
-def comment_serializer(data) -> dict :
-     return {
-          "id": str(data["_id"]) ,
-          "article_id" : data["article_id"] ,
-          "nom_complet" : data["nom_complet"] ,
-          "email" : data["email"],
-          "commentaire" : data["commentaire"],
-          "date_comment" : data["date_comment"]
-     }
-
-
-@route.get("/comments/{article_id}")
-async def get_comments(article_id : str):
-     comments = comments_collection.find({"article_id" : article_id})
-     return [
-          comment_serializer(comment) for comment in comments
-     ]
-
-
-# Route pour POST commentaire
-@route.post("/comments")
-async def create_comment(comment: Comment):
-    comment_dict = jsonable_encoder(comment)
-    comment_dict.pop("id", None)
-    result = comments_collection.insert_one(comment_dict)
-    comment_dict["id"] = str(result.inserted_id)
-    return comment_dict
-
-
-# route pour supprimer un commentaire
+# get comments by article id
+@route.get("/comments/{article_id}", response_model=List[CommentRead])
+async def get_comments(article_id: int):
+    return await get_comments_by_article(article_id)
+# post comment
+@route.post("/comments", response_model=CommentRead, status_code=status.HTTP_201_CREATED)
+async def post_comment(comment: CommentCreate):
+    return await create_comment(comment)
+# delete article
 @route.delete("/comments/{id}")
-async def delete_comment(id: str):
-    result = comments_collection.delete_one({"_id": ObjectId(id)})
-    if result.deleted_count == 1:
-        return {"message": " Commentaire supprimé"}
-    raise HTTPException(status_code=404, detail=" Commentaire non trouvé")
+async def remove_comment(id: int):
+    try:
+        await delete_comment(id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Commentaire non trouvé")
+    return {"message": "Commentaire supprimé"}
+
+# update comment
+@route.put("/comments/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_comment_route(id: int, updated_comment: CommentCreate):
+    try:
+        await update_comment(id, updated_comment)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Commentaire non trouvé")
+    return {"message": "Commentaire mis à jour"}

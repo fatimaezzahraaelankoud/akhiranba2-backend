@@ -1,24 +1,11 @@
+from databases import Database
+import os
+from dotenv import load_dotenv
 
-from pymongo.mongo_client import MongoClient
+load_dotenv()  # charge les variables d'environnement depuis .env
 
-uri = "mongodb+srv://akhiranbaa_mictechteam1:X35!8gf-sAB7CTy@cluster0.woc5ync.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Create a new client and connect to the server
-client = MongoClient(uri)
+database = Database(DATABASE_URL)
 
-# Send a ping to confirm a successful connection
-try:
-    client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print(e)
-
-# Database name
-db = client["akhir_alanbaa_db"]
-
-# Articles collection
-articles_collection = db["articles"]
-
-#comments collection
-comments_collection = db["commentaires"]
 

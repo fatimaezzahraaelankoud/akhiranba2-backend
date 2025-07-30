@@ -1,12 +1,17 @@
-from pydantic import BaseModel,EmailStr
-from typing import Optional
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
-class Comment(BaseModel):
-    id : Optional[str] = None
-    article_id : str 
-    nom_complet : str 
-    email : EmailStr
-    commentaire : str
-    date_comment : datetime 
+Base = declarative_base()
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    article_id = Column(Integer, ForeignKey("articles.id"), nullable=False)
+    nom_complet = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=False)
+    commentaire = Column(String, nullable=False)
+    date_comment = Column(DateTime, default=datetime.utcnow)
+ 
     
